@@ -1,23 +1,18 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { BrowserRouter as Router, useParams } from "react-router-dom";
 import { Card, Image, Button, Typography } from "antd";
-import { referralList } from "./tempData/referralList";
-import { Link } from "react-router-dom";
-import { NETWORKS } from "../constants";
-import wagmiABI from "../abi/wagmi.json";
-import { useContractRead, useSigner, useAccount } from "wagmi";
 import { ethers } from "../../../hardhat/node_modules/ethers/lib";
 import { useContractManager } from "../hooks/useContractManager";
-import { BigNumber } from "ethers";
-import { useCallback } from "react";
 const { Text, Paragraph, Title } = Typography;
 const { Meta } = Card;
 const size = "large";
+
 function ListingDetails({ address, id, userSigner, web3Modal, loadWeb3Modal }) {
   let { nft_id } = useParams();
   const [listingDetail, setListingDetail] = useState();
-  const [currentAddress, setCurrentAddress] = useState("");
+  const [currentAddress, setCurrentAddress] = useState(null);
   const [resourceUri, setResourceUri] = useState("");
+  const [isPromoter, setIsPromoter] = useState(false);
 
   const provider = useMemo(() => new ethers.providers.Web3Provider(window.ethereum), []);
 
@@ -34,11 +29,23 @@ function ListingDetails({ address, id, userSigner, web3Modal, loadWeb3Modal }) {
   useEffect(() => {
     const getCurrentAddress = async () => {
       const signer = provider.getSigner();
+      if (!signer._address) {
+        setCurrentAddress(null);
+        return;
+      }
       const currAddress = await signer.getAddress();
       setCurrentAddress(currAddress);
     };
 
     getCurrentAddress();
+  }, [provider]);
+
+  useEffect(() => {
+    const fetchIsUserPromoter = async () => {
+      const isPromoter = await contract.isPromoter();
+      setIsPromoter(isPromoter);
+    };
+    fetchIsUserPromoter();
   }, []);
 
   useEffect(() => {
@@ -74,36 +81,45 @@ function ListingDetails({ address, id, userSigner, web3Modal, loadWeb3Modal }) {
     baseUri.current = window.location.host;
   }, []);
 
-  const SignUpButton = [];
-  if (web3Modal) {
-    if (web3Modal.cachedProvider) {
-      SignUpButton.push(
-        <Button
-          type="primary"
-          key="logoutbutton"
-          style={{ verticalAlign: "top", marginLeft: 8, margin: 4 }}
-          size="large"
-          shape="round"
-          // onClick={alert('Sign Contract')}
-        >
-          Sign Up as Promoter
-        </Button>,
-      );
-    } else {
-      SignUpButton.push(
-        <Button
-          key="loginbutton"
-          style={{ verticalAlign: "top", marginLeft: 8, margin: 20 }}
-          shape="round"
-          size="large"
-          /* type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time */
-          onClick={loadWeb3Modal}
-        >
-          Connect your Wallet & Sign Up as Promoter
-        </Button>,
-      );
+  const SignUpButton = () => {
+    if (web3Modal) {
+      if (web3Modal.cachedProvider) {
+        return (
+          <Button
+            type="primary"
+            key="logoutbutton"
+            style={{ verticalAlign: "top", marginLeft: 8, margin: 4 }}
+            size="large"
+            shape="round"
+            onClick={async () => {
+              await contract.promoterSignUp();
+              // TODO: Maybe listen to analytics here?
+              setIsPromoter(true);
+            }}
+            disabled={isPromoter}
+            style={{
+              marginBottom: 16,
+            }}
+          >
+            {isPromoter ? "Congratulations! " : "Sign Up as Promoter"}
+          </Button>
+        );
+      } else {
+        return (
+          <Button
+            key="loginbutton"
+            style={{ verticalAlign: "top", marginLeft: 8, margin: 20 }}
+            shape="round"
+            size="large"
+            /* type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time */
+            onClick={loadWeb3Modal}
+          >
+            Connect your Wallet & Sign Up as Promoter
+          </Button>
+        );
+      }
     }
-  }
+  };
 
   const PromoteButton = (
     <div>
@@ -120,18 +136,18 @@ function ListingDetails({ address, id, userSigner, web3Modal, loadWeb3Modal }) {
     </div>
   );
 
-  const listUserNFT = useCallback(
-    async (tokenAddr, tokenId, listPrice, promoterReward, buyerReward) => {
-      await contract.listUserNFT(tokenAddr, tokenId, listPrice, promoterReward, buyerReward);
-    },
-    [contract],
-  );
-
   return (
     <div>
       {!listingDetail ? (
         <div>
-          <Button type="primary" size={size} onClick={listUserNFT}>
+          <Button
+            type="primary"
+            size={size}
+            onClick={async () => {
+              await contract.listUserNFT(_tokenAddr, _tokenId, _listPrice, _promoterReward, _buyerReward);
+            }}
+            disabled={!currentAddress}
+          >
             LIST NFT
           </Button>
         </div>
@@ -169,17 +185,18 @@ function ListingDetails({ address, id, userSigner, web3Modal, loadWeb3Modal }) {
                 </a>
               </div>
               <br></br>
+              <SignUpButton />
 
-              {SignUpButton}
-
-              <div>
-                <b>Unique Referral Url : </b>
-              </div>
-              <Button>
-                <Title copyable mark level={5}>
-                  {`${baseUri.current}/buy/${nft_id}?shiller=${currentAddress}`}
-                </Title>
-              </Button>
+              {isPromoter && (
+                <div>
+                  <b>Unique Referral Url : </b>
+                  <Button>
+                    <Title copyable mark level={5}>
+                      {`${baseUri.current}/buy/${nft_id}?shiller=${currentAddress}`}
+                    </Title>
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </>
