@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useContractReader } from "eth-hooks";
-import { ListingCard, ExampleUI } from "../views"
+import { ListingCard, ExampleUI } from "../views";
 import { ethers } from "ethers";
 import { referralList } from "./tempData/referralList";
-import { Row, Col } from 'antd';
+import { Row, Col } from "antd";
 import { useContractManager } from "../hooks/useContractManager";
 
 /**
@@ -18,31 +18,29 @@ function Home({ yourLocalBalance, readContracts, userSigner }) {
   // in this case, let's keep track of 'purpose' variable from our contract
   const purpose = useContractReader(readContracts, "YourContract", "purpose");
   const contract = useContractManager(userSigner);
-  const [listings, setListings] = useState([])
+  const [listings, setListings] = useState([]);
 
-  const allRefferalListings = listings.map(project => <Col><ListingCard project={project}/> </Col>)
+  const allRefferalListings = listings.map(project => (
+    <Col>
+      <ListingCard project={project} />{" "}
+    </Col>
+  ));
 
-  console.log("AI")
   useEffect(() => {
-    if(!contract) return;
+    if (!contract) return;
     (async () => {
       try {
-        const listings = await contract.getListings()
-        console.log("LISTINGS", listings)
-        setListings(listings)
-      }catch(err){
-        console.log("ERROR LISTINGS", listings)
-
-        console.error(err)
+        const listings = await contract.getListings();
+        setListings(listings);
+      } catch (err) {
+        console.error(err);
       }
     })();
-  },[])
-  
+  }, []);
+
   return (
     <div>
-      <Row>
-      {allRefferalListings}
-      </Row>
+      <Row>{allRefferalListings}</Row>
     </div>
   );
 }
