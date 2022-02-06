@@ -49,7 +49,10 @@ contract WagmiContract is ReentrancyGuard {
    * @param _tokenId id of the token on the NFT contract.
    */
   function approveWagmi(address _tokenAddr, uint256 _tokenId) internal {
-    require(IERC721(_tokenAddr).ownerOf(_tokenId) == msg.sender, "Token is not owned by caller");
+    require(
+      IERC721(_tokenAddr).ownerOf(_tokenId) == msg.sender,
+      "Token is not owned by caller"
+    );
     IERC721(_tokenAddr).approve(address(this), _tokenId);
   }
 
@@ -77,11 +80,12 @@ contract WagmiContract is ReentrancyGuard {
     uint256 _promoterReward,
     uint256 _buyerReward
   ) external payable returns (uint256) {
-    uint256 expectedDeposit = _listPrice.mul(
-      _promoterReward.add(_buyerReward).div(100)
-    );
+    uint256 expectedDeposit = _listPrice
+      .mul(_promoterReward.add(_buyerReward))
+      .div(100);
     require(msg.value == expectedDeposit, "Expected deposit is wrong");
-    listings.push(Listing({
+    listings.push(
+      Listing({
         id: listingId,
         exists: true,
         tokenAddr: _tokenAddr,
@@ -92,9 +96,10 @@ contract WagmiContract is ReentrancyGuard {
         buyerReward: _buyerReward,
         resourceUri: ERC721(_tokenAddr).tokenURI(_tokenId),
         resourceName: ERC721(_tokenAddr).name()
-    }));
-    
-    //approveWagmi(_tokenAddr, _tokenId);
+      })
+    );
+
+    approveWagmi(_tokenAddr, _tokenId);
     emit NewListing(listingId);
     return listingId++;
   }
@@ -137,28 +142,49 @@ contract WagmiContract is ReentrancyGuard {
    * @param _promoterAddr address of the referrer. the null address (0x0)
    * is used if the NFT is bought without a promoter address.
    */
-  function buyNFT(uint256 _listingId, address _promoterAddr) external payable nonReentrant {
+  function buyNFT(uint256 _listingId, address _promoterAddr)
+    external
+    payable
+    nonReentrant
+  {
     require(_listingId <= listingId, "Invalid listing id");
-    
+
     Listing storage listing = listings[_listingId];
     require(listing.exists, "Listing does not exist anymore");
-    require(msg.value >= listing.listPrice, "Buyer amount is below listed price");
-    
-    address tokenOperator = IERC721(listing.tokenAddr).getApproved(listing.tokenId);
-    require(tokenOperator == address(this), "Contract is not approved to send NFT"); 
+    require(
+      msg.value >= listing.listPrice,
+      "Buyer amount is below listed price"
+    );
+
+    address tokenOperator = IERC721(listing.tokenAddr).getApproved(
+      listing.tokenId
+    );
+    require(
+      tokenOperator == address(this),
+      "Contract is not approved to send NFT"
+    );
 
     // Transfer commission
     if (_promoterAddr != address(0)) {
-      uint promoterRewardFee = listing.promoterReward.mul(listing.listPrice).div(100);
-      uint buyerRewardFee = listing.buyerReward.mul(listing.buyerReward).div(100);
+      uint256 promoterRewardFee = listing
+        .promoterReward
+        .mul(listing.listPrice)
+        .div(100);
+      uint256 buyerRewardFee = listing.buyerReward.mul(listing.buyerReward).div(
+        100
+      );
 
       payable(_promoterAddr).transfer(promoterRewardFee);
-      (bool success, ) = msg.sender.call{ value: buyerRewardFee }("");
+      (bool success, ) = msg.sender.call{value: buyerRewardFee}("");
       require(success, "Sending reward to buyer failed");
     }
 
     // TODO: Replace with safeTransferFrom by checking ERC721Receiver implementer
-    IERC721(listing.tokenAddr).transferFrom(listing.ownerAddr, msg.sender, listing.tokenId);
+    IERC721(listing.tokenAddr).transferFrom(
+      listing.ownerAddr,
+      msg.sender,
+      listing.tokenId
+    );
     payable(listing.ownerAddr).transfer(listing.listPrice);
 
     emit BoughtListing(_listingId);

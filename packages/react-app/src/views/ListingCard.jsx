@@ -3,6 +3,7 @@ import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { ethers } from "../../../hardhat/node_modules/ethers/lib";
 
 const { Meta } = Card;
 
@@ -28,10 +29,13 @@ function ListingCard({ project }) {
       <div>
         <Card style={{ width: 300, margin: 10 }} cover={<img alt="example" src={nftUrl} />} hoverable>
           <div>
-            <b>Promoter Reward : </b> <p>{promoterReward.toNumber()}</p>
+            <b>Listing Price : </b> <p>{ethers.utils.formatEther(listPrice)}</p>
           </div>
           <div>
-            <b>Buyer Reward : </b> <p>{buyerReward.toNumber()}</p>
+            <b>Promoter Reward : </b> <p>{promoterReward.toNumber()} %</p>
+          </div>
+          <div>
+            <b>Buyer Reward : </b> <p>{buyerReward.toNumber()} %</p>
           </div>
         </Card>
       </div>

@@ -4,7 +4,7 @@ import { useContractReader } from "eth-hooks";
 import { ListingCard, ExampleUI } from "../views";
 import { ethers } from "ethers";
 import { referralList } from "./tempData/referralList";
-import { Row, Col } from "antd";
+import { Row, Col, Empty } from "antd";
 import { useContractManager } from "../hooks/useContractManager";
 
 /**
@@ -22,10 +22,11 @@ function Home({ yourLocalBalance, readContracts, userSigner }) {
 
   const allRefferalListings = listings.map(project => (
     <Col>
-      <ListingCard project={project} />{" "}
+      <ListingCard project={project} />
     </Col>
   ));
 
+  console.log("AI");
   useEffect(() => {
     if (!contract) return;
     (async () => {
@@ -40,7 +41,13 @@ function Home({ yourLocalBalance, readContracts, userSigner }) {
 
   return (
     <div>
-      <Row>{allRefferalListings}</Row>
+      {allRefferalListings.length == 0 ? (
+        <div style={{ margin: 100 }}>
+          <Empty description="No NFTs are being listed for referral" />
+        </div>
+      ) : (
+        <Row> {allRefferalListings} </Row>
+      )}
     </div>
   );
 }

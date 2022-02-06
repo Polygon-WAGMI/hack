@@ -45,11 +45,11 @@ function BuyingDetails({ address, userSigner }) {
         console.error(err);
       }
     })();
-  }, []);
+  }, [contract]);
 
   const buyNFT = useCallback(async () => {
     console.log("LIST")
-    console.log("LIUST PRICE", ethers.utils.formatEther(listingDetail.listPrice))
+    console.log("LIST PRICE", ethers.utils.formatEther(listingDetail.listPrice))
     if (!nft_id || !contract) return;
     await contract.buyNFT(nft_id, shillerAddress, {
       value:listingDetail.listPrice,
