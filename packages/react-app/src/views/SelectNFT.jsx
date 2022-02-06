@@ -77,11 +77,6 @@ export default function SelectNFT({
     })()
   }, [])
 
-  // <img 
-  // src="https://images.pexels.com/photos/20787/pexels-photo.jpg?auto=compress&cs=tinysrgb&h=350"
-  // alt="new"
-  // />
-
   const NFTOptions = []
 
   let ImageStyle = {
@@ -132,7 +127,7 @@ export default function SelectNFT({
   const onFinish = (values) => {
     const token_address = NFTDetails.data.result[selectedIndex].token_address
     const token_id = NFTDetails.data.result[selectedIndex].token_id
-    const price = values.listingPrice
+    const price = values.listingPrice.amount
     const bountyRate = values.bountyRate
     const discountRate = values.discountRate
 
@@ -144,6 +139,7 @@ export default function SelectNFT({
     console.log("bountyRate",bountyRate)
     console.log("discountRate",discountRate)
 
+    setIsModalVisible(false);
   };
 
   const onReset = () => {
@@ -152,8 +148,8 @@ export default function SelectNFT({
 
   const onFill = () => {
     form.setFieldsValue({
-      discountRate: '3%',
-      bountyRate: '2%',
+      discountRate: '3',
+      bountyRate: '2',
     });
   };
 
@@ -201,10 +197,10 @@ export default function SelectNFT({
                   </Form.Item>
                 </Input.Group>
               </Form.Item>
-              <Form.Item name="discountRate" label="Discount Rate" rules={[{ required: true }]}>
+              <Form.Item name="discountRate" label="Discount Rate (in %)" rules={[{ required: true }]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="bountyRate" label="Bounty Rate" rules={[{ required: true }]}>
+              <Form.Item name="bountyRate" label="Bounty Rate (in %)" rules={[{ required: true }]}>
                 <Input />
               </Form.Item>
               <Form.Item {...tailLayout}>
