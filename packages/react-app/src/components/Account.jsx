@@ -79,7 +79,7 @@ export default function Account({
             shape="round"
             size="large"
           >
-            List you NFT
+            List your NFT
           </Button>
         </Link>,
       );
