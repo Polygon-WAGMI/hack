@@ -1,6 +1,7 @@
 import { Button } from "antd";
 import React from "react";
 import { useThemeSwitcher } from "react-css-theme-switcher";
+import { Link } from 'react-router-dom'
 
 import Address from "./Address";
 import Balance from "./Balance";
@@ -71,6 +72,16 @@ export default function Account({
         >
           logout
         </Button>,
+        <Link to="/listNFT" className="btn btn-primary">
+          <Button
+            key="setupreferralbutton"
+            style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
+            shape="round"
+            size="large"
+          >
+            List you NFT
+          </Button>
+        </Link>,
       );
     } else {
       modalButtons.push(

@@ -30,7 +30,7 @@ import externalContracts from "./contracts/external_contracts";
 // contracts
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
-import { Home, ExampleUI, Hints, Subgraph, ListingDetails, MenuBar, BuyingDetails } from "./views";
+import { Home, ExampleUI, Hints, Subgraph, ListingDetails, MenuBar, BuyingDetails, SelectNFT } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 
 const { ethers } = require("ethers");
@@ -268,6 +268,21 @@ function App(props) {
 
           <Route exact path="/referrals">
             <MenuBar />
+          </Route>
+
+          <Route exact path="/listNFT">
+            <SelectNFT
+                address={address}
+                userSigner={userSigner}
+                mainnetProvider={mainnetProvider}
+                localProvider={localProvider}
+                yourLocalBalance={yourLocalBalance}
+                price={price}
+                tx={tx}
+                writeContracts={writeContracts}
+                readContracts={readContracts}
+                purpose={purpose}
+            />
           </Route>
 
           <Route path="/project/:nft_id">
