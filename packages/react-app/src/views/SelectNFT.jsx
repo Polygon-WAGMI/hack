@@ -25,7 +25,7 @@ export default function SelectNFT({
   const [selectedItem, setSelectedItem] = useState(null)
   
   
-  let NFTDataPromise =  axios.get('https://deep-index.moralis.io/api/v2/0x68929570Ee8a4Da4Fc7634340D0d92585B2Aa313/nft?chain=eth&format=hex&token_addresses=', {
+  let NFTDataPromise =  axios.get(`https://deep-index.moralis.io/api/v2/${address}/nft?chain=eth&format=hex&token_addresses=`, {
                           headers: {
                             'accept': 'application/json',
                             'X-API-Key': 'o7LipgnlcvThrWUfSPYfHBYl01I1J94hxzM1FZSzziIrqO8ducomL2buD3DVORCd'
