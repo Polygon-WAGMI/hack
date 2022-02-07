@@ -1,6 +1,6 @@
 import { useContract } from "wagmi";
 import wagmiABI from "../abi/wagmi.json";
-import { ethers } from "../../../hardhat/node_modules/ethers/lib";
+import { ethers } from "ethers";
 import { WAGMI_CONTRACT_ADDRESS } from "../constants/contract";
 
 export const useContractManager = signer => {

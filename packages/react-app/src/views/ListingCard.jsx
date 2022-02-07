@@ -3,7 +3,7 @@ import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ethers } from "../../../hardhat/node_modules/ethers/lib";
+import { ethers } from "ethers";
 
 const { Meta } = Card;
 

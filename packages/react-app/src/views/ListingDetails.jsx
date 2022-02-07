@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { BrowserRouter as Router, useParams } from "react-router-dom";
 import { Card, Image, Button, Typography } from "antd";
-import { ethers } from "../../../hardhat/node_modules/ethers/lib";
+import { ethers } from "ethers";
 import { useContractManager } from "../hooks/useContractManager";
 const { Text, Paragraph, Title } = Typography;
 const { Meta } = Card;
 const size = "large";
 
-function ListingDetails({ address, id, userSigner, web3Modal, loadWeb3Modal }) {
+function ListingDetails({ id, userSigner, web3Modal, loadWeb3Modal }) {
   let { nft_id } = useParams();
   const [listingDetail, setListingDetail] = useState();
   const [currentAddress, setCurrentAddress] = useState(null);
@@ -49,14 +49,15 @@ function ListingDetails({ address, id, userSigner, web3Modal, loadWeb3Modal }) {
   }, []);
 
   useEffect(() => {
-    contract.on("NewListing", listingId => {
-      console.log("Navigate to new listing");
-    });
+    const handleNewListing = listingId => {
+      // redirect to listing page
+      window.location.href = "/project" + listingId;
+    };
+
+    contract.on("NewListing", handleNewListing);
 
     return () => {
-      contract.off("NewListing", listingId => {
-        console.log("Unmount after navigation");
-      });
+      contract.off("NewListing", handleNewListing);
     };
   }, []);
 
@@ -144,9 +145,8 @@ function ListingDetails({ address, id, userSigner, web3Modal, loadWeb3Modal }) {
             type="primary"
             size={size}
             onClick={async () => {
-              await contract.listUserNFT(_tokenAddr, _tokenId, _listPrice, _promoterReward, _buyerReward);
+              await contract.listNFT(_tokenAddr, _tokenId, _listPrice, _promoterReward, _buyerReward);
             }}
-            disabled={!currentAddress}
           >
             LIST NFT
           </Button>
