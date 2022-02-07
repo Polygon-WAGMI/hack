@@ -36,7 +36,7 @@ function App(props) {
           </Route>
 
           <Route exact path="/listNFT">
-            <SelectNFT
+            {/* <SelectNFT
               address={address}
               userSigner={userSigner}
               mainnetProvider={mainnetProvider}
@@ -47,7 +47,7 @@ function App(props) {
               writeContracts={writeContracts}
               readContracts={readContracts}
               purpose={purpose}
-            />
+            /> */}
           </Route>
 
           <Route path="/project/:nft_id">
