@@ -1,19 +1,17 @@
-import { useContract } from "wagmi";
+import { useContract, useProvider, useSigner } from "wagmi";
 import wagmiABI from "../abi/wagmi.json";
-import { ethers } from "ethers";
-import { WAGMI_CONTRACT_ADDRESS } from "../constants/contract";
 
-export const useContractManager = signer => {
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const metamaskSigner = provider.getSigner();
+export const useContractManager = () => {
+  const [{ data: signer }] = useSigner();
+  const provider = useProvider();
 
-  const signerProvider = metamaskSigner ?? provider;
+  const signerProvider = signer ?? provider;
   let contractManager;
 
   try {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     contractManager = useContract({
-      addressOrName: WAGMI_CONTRACT_ADDRESS,
+      addressOrName: "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",
       contractInterface: wagmiABI,
       signerOrProvider: signerProvider,
     });
@@ -25,6 +23,8 @@ export const useContractManager = signer => {
   if (!signerProvider) {
     return;
   }
+  console.log("signer", signer);
+  console.log("contractManager", !!signer, !!provider, contractManager);
 
   return contractManager;
 };

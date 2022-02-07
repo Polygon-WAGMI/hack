@@ -8,8 +8,17 @@ async function main() {
   await wagmiContract.deployed();
   console.log("WagmiContract deployed to:", wagmiContract.address);
   fs.writeFileSync(
-    path.join(__dirname, "/../../react-app/src/abi/wagmi.json"),
+    path.join(__dirname, "../../react-app/src/abi/wagmi.json"),
     wagmiContract.interface.format("json") as string
+  );
+
+  const SampleToken = await ethers.getContractFactory("SampleToken");
+  const sampleToken = await SampleToken.deploy();
+  await sampleToken.deployed();
+  console.log("SampleToken deployed to:", sampleToken.address);
+  fs.writeFileSync(
+    path.join(__dirname, "../../react-app/src/abi/SampleToken.json"),
+    sampleToken.interface.format("json") as string
   );
 }
 
