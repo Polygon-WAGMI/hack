@@ -1,63 +1,57 @@
-import Rect, { useEffect, useState, useRef } from "react";
-import { BrowserRouter as Router, useParams } from "react-router-dom";
-import { Card, Image, Button, Typography } from "antd";
-import { referralList } from "./tempData/referralList";
-import { Link } from "react-router-dom";
-import { NETWORKS } from "../constants";
-import wagmiABI from "../abi/wagmi.json";
-import { useContractRead } from "wagmi";
+import { Button, Card, Image, Typography } from "antd";
+import { BigNumber } from "ethers";
+import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useAccount } from "wagmi";
 import { ethers } from "../../../hardhat/node_modules/ethers/lib";
 import { useContractManager } from "../hooks/useContractManager";
-const { Text, Paragraph } = Typography;
+import { referralList } from "./tempData/referralList";
+const { Text, Paragraph, Title } = Typography;
 const { Meta } = Card;
 const size = "large";
-function ListingDetails({ address, id, userSigner }) {
+
+function ListingDetails() {
+  const [{ data: address }] = useAccount();
+
   const [resourceUri, setResourceUri] = useState("");
   let { nft_id } = useParams();
   const itemDetail = () => referralList.filter(obj => obj.id == nft_id)[0];
   const [uniqueUrl, setUniqueUrl] = useState(`${process.env.PUBLIC_URL}/dark-thsdsdseme.css`);
-  const [listingDetail, setListingDetail] = useState(null);
-  const contract = useContractManager(userSigner);
+  const [listingDetail, setListingDetail] = useState({
+    tokenAddr: "123",
+    tokenId: 2,
+    listPrice: ethers.utils.parseEther("0.00005"),
+    promoterReward: BigNumber.from("15"),
+    buyerReward: BigNumber.from("20"),
+  });
 
+  const contract = useContractManager();
   const baseuri = useRef("");
-  // //SET LISTING DUMMY NFT
-  // const _tokenAddr = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
-  // const _tokenId = 8
-  // const _listPrice = ethers.utils.parseEther('100')
-  // const _promoterReward = 5
-  // const _buyerReward = 10
-  // useEffect(() => {
-  //   contract.on('NewListing', (listingId)  => {
-  //     console.log("New Listing")
-  //   })
+  //SET LISTING DUMMY NFT
+  const _tokenAddr = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+  const _tokenId = 9;
+  const _listPrice = ethers.utils.parseEther("0.00005");
+  const _promoterReward = 15;
+  const _buyerReward = 20;
+  useEffect(() => {
+    contract.on("NewListing", listingId => {
+      console.log("New Listing");
+    });
 
-  //   return () => {
-  //     contract.off('NewListing', (listingId) => {
-  //       console.log("New Listing")
-  //     })
-  //   }
-  // }, [])
-  // <div>
-  //       <Button type="primary" size={size}
-  //         onClick={async () => { await contract.listNFT(
-  //           _tokenAddr,
-  //           _tokenId,
-  //           _listPrice,
-  //           _promoterReward,
-  //           _buyerReward
-  //         )}
-  //       }
-  //       >
-  //         LIST NFT
-  //       </Button>
-  //     </div>
+    return () => {
+      contract.off("NewListing", listingId => {
+        console.log("New Listing");
+      });
+    };
+  }, []);
 
   // IIFE
   useEffect(() => {
     if (!contract) return;
     (async () => {
       try {
-        const listing = await contract.getListing(0);
+        const listing = await contract.getListing(nft_id);
+        console.log(listing);
         setListingDetail(listing);
         fetch(`${listing.resourceUri}`)
           .then(res => res.json())
@@ -80,8 +74,68 @@ function ListingDetails({ address, id, userSigner }) {
     baseuri.current = window.location.host;
   }, []);
 
+  const SignUpButton = [];
+  // if (web3Modal) {
+  //   if (web3Modal.cachedProvider) {
+  //     SignUpButton.push(
+  //       <Button
+  //         type="primary"
+  //         key="logoutbutton"
+  //         style={{ verticalAlign: "top", marginLeft: 8, margin: 4 }}
+  //         size="large"
+  //         shape="round"
+  //         // onClick={alert('Sign Contract')}
+  //       >
+  //         Sign Up as Promoter
+  //       </Button>,
+  //     );
+  //   } else {
+  //     SignUpButton.push(
+  //       <Button
+  //         key="loginbutton"
+  //         style={{ verticalAlign: "top", marginLeft: 8, margin: 20 }}
+  //         shape="round"
+  //         size="large"
+  //         /* type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time */
+  //         onClick={loadWeb3Modal}
+  //       >
+  //         Connect your Wallet & Sign Up as Promoter
+  //       </Button>,
+  //     );
+  //   }
+  // }
+
+  const PromoteButton = (
+    <div>
+      <Button
+        type="primary"
+        key="logoutbutton"
+        style={{ verticalAlign: "top", marginLeft: 8, margin: 4 }}
+        size="large"
+        disabled
+        // onClick={logoutOfWeb3Modal}
+      >
+        Sign Up as Promoter
+      </Button>
+    </div>
+  );
+
   return (
     <div>
+      <div>
+        <Button
+          type="primary"
+          size={size}
+          onClick={async () => {
+            if (!contract) return;
+            console.log("CLICK!");
+            await contract.listNFT(_tokenAddr, _tokenId, _listPrice, _promoterReward, _buyerReward);
+          }}
+        >
+          LIST NFT
+        </Button>
+      </div>
+
       <Image width={200} src={resourceUri} />
       <h1>{listingDetail?.name}</h1>
       {!!listingDetail && (
@@ -103,31 +157,24 @@ function ListingDetails({ address, id, userSigner }) {
           </div>
           <div>
             <b>Image Url : </b>
-            <a href={resourceUri} target="_blank" rel="noreferrer">
+            <a href={resourceUri} target="_blank">
               {resourceUri}
             </a>
           </div>
+          <br></br>
+
+          {SignUpButton}
 
           <div>
             <b>Unique Referral Url : </b>
-            <Text copyable>{`${baseuri.current}/buyer/${nft_id}?adddress=${address}`}</Text>
           </div>
+          <Button>
+            <Title copyable mark level={5}>
+              {`${baseuri.current}/buy/${nft_id}?shiller=${address}`}
+            </Title>
+          </Button>
         </div>
       )}
-
-      <div>
-        <Button type="primary" size={size} onClick={() => setUniqueUrl("Test")}>
-          Promote
-        </Button>
-      </div>
-      <br></br>
-      <div>
-        <Link to={`/buyer/${nft_id}/${address}`}>
-          <Button type="primary" size={size}>
-            Buyer Link
-          </Button>
-        </Link>
-      </div>
     </div>
   );
 }

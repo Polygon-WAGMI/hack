@@ -15,9 +15,10 @@ export default function ExampleUI({
   tx,
   readContracts,
   writeContracts,
+  userSigner
 }) {
+  console.log(userSigner)
   const [newPurpose, setNewPurpose] = useState("loading...");
-
   return (
     <div>
       {/*
