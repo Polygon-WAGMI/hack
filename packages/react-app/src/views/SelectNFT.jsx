@@ -1,20 +1,12 @@
 import { Button, Select, Form, Divider, Input, Option, Slider, Modal, Switch } from "antd";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useAccount } from "wagmi";
 
 // import "./styles.css";
 
-export default function SelectNFT({
-  purpose,
-  address,
-  mainnetProvider,
-  localProvider,
-  yourLocalBalance,
-  price,
-  tx,
-  readContracts,
-  writeContracts,
-}) {
+export default function SelectNFT() {
+  const [{ data: account }] = useAccount();
   const [newPurpose, setNewPurpose] = useState("loading...");
 
   const axios = require("axios");
@@ -25,7 +17,7 @@ export default function SelectNFT({
   const [selectedItem, setSelectedItem] = useState(null);
 
   let NFTDataPromise = axios.get(
-    `https://deep-index.moralis.io/api/v2/${address}/nft?chain=eth&format=hex&token_addresses=`,
+    `https://deep-index.moralis.io/api/v2/${account?.address}/nft?chain=eth&format=hex&token_addresses=`,
     {
       headers: {
         accept: "application/json",
