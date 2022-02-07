@@ -1,4 +1,4 @@
-import { Button, Image, Row } from "antd";
+import { Button, Image, Row, Col } from "antd";
 import React, { useCallback, useState } from "react";
 import { useEffect } from "react";
 import { useContract, useProvider, useSigner } from "wagmi";
@@ -8,9 +8,10 @@ const NFTContract = () => {
   const provider = useProvider();
   const [{ data: signer }] = useSigner();
   const [tokens, setTokens] = useState([]);
+  const [update, setUpdate] = useState(0);
 
   const contract = useContract({
-    addressOrName: "0x9A676e781A523b5d0C0e43731313A708CB607508",
+    addressOrName: "0x09635F643e140090A9A8Dcd712eD6285858ceBef",
     contractInterface: SampleTokenABI,
     signerOrProvider: signer ?? provider,
   });
@@ -21,27 +22,34 @@ const NFTContract = () => {
     (async () => {
       const maxTokenId = (await contract.getTokenId()).toNumber();
       const currTokens = [];
-      console.log(maxTokenId);
-      console.log(await contract.tokenURI(0));
-      // for (let i = 0; i < maxTokenId; i++) {
-      //   currTokens.push(await contract.tokenURI(i));
-      // }
-      // console.log(currTokens);
+      for (let i = 1; i <= maxTokenId; i++) {
+        currTokens.push({
+          owner: await contract.ownerOf(i),
+          uri: await contract.tokenURI(i),
+        });
+      }
+      setTokens(currTokens);
     })();
-  }, [contract]);
+  }, [contract, update]);
 
   const handleMint = useCallback(async () => {
     if (!signer) return;
 
-    console.log("minting");
     const addr = await signer.getAddress();
     const tx = await contract.mint(addr, randomPicURI);
-    console.log(tx);
-    console.log(await contract.tokenURI(0));
+    setUpdate(u => u + 1);
   }, [signer, contract, randomPicURI]);
 
   return (
     <>
+      <Row>
+        {tokens.map(t => (
+          <Col key={t.uri}>
+            <Image src={t.uri} />
+            <p>{t.owner}</p>
+          </Col>
+        ))}
+      </Row>
       <Row>
         <Image src={randomPicURI} />
       </Row>
