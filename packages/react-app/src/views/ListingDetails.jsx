@@ -2,7 +2,7 @@ import { Button, Card, Image, Typography } from "antd";
 import { BigNumber } from "ethers";
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useAccount } from "wagmi";
+import { useAccount, useProvider } from "wagmi";
 import { ethers } from "../../../hardhat/node_modules/ethers/lib";
 import { useContractManager } from "../hooks/useContractManager";
 import { referralList } from "./tempData/referralList";
@@ -24,9 +24,12 @@ function ListingDetails() {
     promoterReward: BigNumber.from("15"),
     buyerReward: BigNumber.from("20"),
   });
+  const [currentAddress, setCurrentAddress] = useState(null);
+  const provider = useProvider();
+  const [isPromoter, setIsPromoter] = useState(false);
 
   const contract = useContractManager();
-  const baseuri = useRef("");
+  const baseUri = useRef("");
   //SET LISTING DUMMY NFT
   const _tokenAddr = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
   const _tokenId = 9;
@@ -163,14 +166,12 @@ function ListingDetails() {
           </div>
           <br></br>
 
-          {SignUpButton}
-
           <div>
             <b>Unique Referral Url : </b>
           </div>
           <Button>
             <Title copyable mark level={5}>
-              {`${baseuri.current}/buy/${nft_id}?shiller=${address}`}
+              {`${baseUri.current}/buy/${nft_id}?shiller=${address}`}
             </Title>
           </Button>
         </div>
@@ -208,8 +209,7 @@ function ListingDetails() {
                 </a>
               </div>
               <br></br>
-              <SignUpButton />
-
+              {SignUpButton}
               {isPromoter && (
                 <div>
                   <b>Unique Referral Url : </b>
