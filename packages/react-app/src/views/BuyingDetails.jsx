@@ -6,8 +6,6 @@ import { useContractManager } from "../hooks/useContractManager";
 import { useCallback } from "react";
 import { ethers } from "ethers";
 
-const { Meta } = Card;
-
 function useQuery() {
   const { search } = useLocation();
 
@@ -28,42 +26,29 @@ function BuyingDetails() {
     (async () => {
       try {
         const listing = await contract.getListing(nft_id);
-        console.log(listing);
         setListingDetail(listing);
-        fetch(`${listing.resourceUri}`)
-          .then(res => res.json())
-          .then(
-            result => {
-              console.log(result);
-              setResourceUri(result.image);
-            },
-            error => {
-              console.err("error");
-            },
-          );
+
+        const response = await fetch(listing.resourceUri);
+        const responseJson = await response.json();
+        setResourceUri(responseJson.image);
       } catch (err) {
         console.error(err);
       }
     })();
-  }, [contract]);
+  }, []);
 
   const buyNFT = useCallback(async () => {
-    console.log("LIST");
-    console.log(listingDetail)
-    console.log(listingDetail.listPrice.toString())
-    console.log("LIST PRICE", ethers.utils.formatEther(listingDetail.listPrice));
     if (!nft_id || !contract) return;
     await contract.buyNFT(nft_id, shillerAddress, {
       value: listingDetail.listPrice.toString(),
     });
-  }, [contract, nft_id, shillerAddress]);
+  }, [contract, listingDetail?.listPrice, nft_id, shillerAddress]);
 
   console.log("nft_id", nft_id);
   console.log("shiller address", shillerAddress);
   return (
     <div>
       <h1>BUY</h1>
-
       <Image width={200} src={resourceUri} />
       {!!listingDetail && (
         <div>
@@ -84,14 +69,13 @@ function BuyingDetails() {
           </div>
           <div>
             <b>Image Url : </b>
-            <a href={resourceUri} target="_blank">
+            <a href={resourceUri} target="_blank" rel="noreferrer">
               {resourceUri}
             </a>
           </div>
           <br></br>
         </div>
       )}
-
       <div>
         <Button type="primary" size={"large"} onClick={buyNFT}>
           PURCHASE

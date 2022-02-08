@@ -23,7 +23,7 @@ const subgraphUri = "http://localhost:8000/subgraphs/name/scaffold-eth/your-cont
 const connectors = ({ chainId }) => {
   return [
     new InjectedConnector({
-      chains: [chain.hardhat],
+      chains: [chain.polygonTestnetMumbai],
       options: { shimDisconnect: true },
     }),
   ];

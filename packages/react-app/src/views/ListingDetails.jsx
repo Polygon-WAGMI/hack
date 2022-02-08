@@ -2,7 +2,7 @@ import { Button, Card, Image, Typography } from "antd";
 import { BigNumber } from "ethers";
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useAccount } from "wagmi";
+import { useAccount, useProvider } from "wagmi";
 import { ethers } from "../../../hardhat/node_modules/ethers/lib";
 import { useContractManager } from "../hooks/useContractManager";
 import { referralList } from "./tempData/referralList";
@@ -24,24 +24,51 @@ function ListingDetails() {
     promoterReward: BigNumber.from("15"),
     buyerReward: BigNumber.from("20"),
   });
+  const [currentAddress, setCurrentAddress] = useState(null);
+  const provider = useProvider();
+  const [isPromoter, setIsPromoter] = useState(false);
 
   const contract = useContractManager();
-  const baseuri = useRef("");
+  const baseUri = useRef("");
   //SET LISTING DUMMY NFT
   const _tokenAddr = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
   const _tokenId = 9;
   const _listPrice = ethers.utils.parseEther("0.00005");
   const _promoterReward = 15;
   const _buyerReward = 20;
+
   useEffect(() => {
-    contract.on("NewListing", listingId => {
-      console.log("New Listing");
-    });
+    const getCurrentAddress = async () => {
+      const signer = provider.getSigner();
+      if (!signer._address) {
+        setCurrentAddress(null);
+        return;
+      }
+      const currAddress = await signer.getAddress();
+      setCurrentAddress(currAddress);
+    };
+
+    getCurrentAddress();
+  }, [provider]);
+
+  useEffect(() => {
+    const fetchIsUserPromoter = async () => {
+      const isPromoter = await contract.isPromoter();
+      setIsPromoter(isPromoter);
+    };
+    fetchIsUserPromoter();
+  }, []);
+
+  useEffect(() => {
+    const handleNewListing = listingId => {
+      // redirect to listing page
+      window.location.href = "/project" + listingId;
+    };
+
+    contract.on("NewListing", handleNewListing);
 
     return () => {
-      contract.off("NewListing", listingId => {
-        console.log("New Listing");
-      });
+      contract.off("NewListing", handleNewListing);
     };
   }, []);
 
@@ -51,27 +78,19 @@ function ListingDetails() {
     (async () => {
       try {
         const listing = await contract.getListing(nft_id);
-        console.log(listing);
         setListingDetail(listing);
-        fetch(`${listing.resourceUri}`)
-          .then(res => res.json())
-          .then(
-            result => {
-              console.log(result);
-              setResourceUri(result.image);
-            },
-            error => {
-              console.err("error");
-            },
-          );
+
+        const result = await fetch(listing.resourceUri);
+        const resultData = await result.json();
+        setResourceUri(resultData.image);
       } catch (err) {
         console.error(err);
       }
     })();
-  }, [contract]);
+  }, []);
 
   useEffect(() => {
-    baseuri.current = window.location.host;
+    baseUri.current = window.location.host;
   }, []);
 
   const SignUpButton = [];
@@ -122,23 +141,7 @@ function ListingDetails() {
 
   return (
     <div>
-      <div>
-        <Button
-          type="primary"
-          size={size}
-          onClick={async () => {
-            if (!contract) return;
-            console.log("CLICK!");
-            await contract.listNFT(_tokenAddr, _tokenId, _listPrice, _promoterReward, _buyerReward);
-          }}
-        >
-          LIST NFT
-        </Button>
-      </div>
-
-      <Image width={200} src={resourceUri} />
-      <h1>{listingDetail?.name}</h1>
-      {!!listingDetail && (
+      {!listingDetail ? (
         <div>
           <div>
             <b>Owner Address : </b> {listingDetail.ownerAddr}
@@ -157,23 +160,69 @@ function ListingDetails() {
           </div>
           <div>
             <b>Image Url : </b>
-            <a href={resourceUri} target="_blank">
+            <a href={resourceUri} target="_blank" rel="noreferrer">
               {resourceUri}
             </a>
           </div>
           <br></br>
-
-          {SignUpButton}
 
           <div>
             <b>Unique Referral Url : </b>
           </div>
           <Button>
             <Title copyable mark level={5}>
-              {`${baseuri.current}/buy/${nft_id}?shiller=${address}`}
+              {`${baseUri.current}/buy/${nft_id}?shiller=${address}`}
             </Title>
           </Button>
         </div>
+      ) : (
+        <>
+          <Image
+            width={200}
+            src={resourceUri}
+            style={{
+              borderRadius: 16,
+            }}
+          />
+          <h1>{listingDetail?.name}</h1>
+          {!!listingDetail && (
+            <div>
+              <div>
+                <b>Owner Address : </b> {listingDetail.ownerAddr}
+              </div>
+              <div>
+                <b>Token Address : </b> {listingDetail.tokenAddr}
+              </div>
+              <div>
+                <b>Listing Price : </b> {ethers.utils.formatEther(listingDetail.listPrice)}
+              </div>
+              <div>
+                <b>Buyer Reward : </b> {listingDetail.buyerReward.toNumber()}
+              </div>
+              <div>
+                <b>Promoter Reward </b> {listingDetail.promoterReward.toNumber()}
+              </div>
+              <div>
+                <b>Image Url : </b>
+                <a href={resourceUri} target="_blank" rel="noreferrer">
+                  {resourceUri}
+                </a>
+              </div>
+              <br></br>
+              {SignUpButton}
+              {isPromoter && (
+                <div>
+                  <b>Unique Referral Url : </b>
+                  <Button>
+                    <Title copyable mark level={5}>
+                      {`${baseUri.current}/buy/${nft_id}?shiller=${currentAddress}`}
+                    </Title>
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

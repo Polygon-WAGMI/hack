@@ -16,11 +16,13 @@ export const useContractManager = () => {
       signerOrProvider: signerProvider,
     });
   } catch (e) {
-    console.log("dick");
     console.error(e);
     return;
   }
 
+  if (!signerProvider) {
+    return;
+  }
   console.log("signer", signer);
   console.log("contractManager", !!signer, !!provider, contractManager);
 

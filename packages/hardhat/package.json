@@ -41,6 +41,7 @@
     "test": "hardhat test --network hardhat",
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy-polygon-testnet": "hardhat run scripts/deploy.ts --network matic",
     "clean": "hardhat clean"
   }
 }

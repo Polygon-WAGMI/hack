@@ -19,11 +19,8 @@ function Home() {
     (async () => {
       try {
         const listings = await contract.getListings();
-        console.log("LISTINGS", listings);
         setListings(listings);
       } catch (err) {
-        console.log("ERROR LISTINGS", listings);
-
         console.error(err);
       }
     })();

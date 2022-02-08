@@ -136,6 +136,10 @@ contract WagmiContract is ReentrancyGuard {
     promoters[msg.sender] = true;
   }
 
+  function isPromoter() external view returns (bool) {
+    return promoters[msg.sender];
+  }
+
   /**
    * Purchase an NFT.
    * @param _listingId id of the listing.
